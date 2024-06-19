@@ -1,6 +1,6 @@
 from .models import Student, Grade, Subject
-from django.shortcuts import render
-
+from django.shortcuts import render, redirect
+from .forms import StudentForm
 
 
 def dashboard(request):
@@ -31,3 +31,14 @@ def dashboard(request):
         'selected_subject': selected_subject
     })
 
+
+def add_student(request):
+    if request.method == 'POST':
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = StudentForm()
+    
+    return render(request, 'core/add_student.html', {'form': form})
