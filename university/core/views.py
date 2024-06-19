@@ -1,6 +1,6 @@
 from .models import Student, Grade, Subject
-from django.shortcuts import render, redirect
-from .forms import StudentForm
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import StudentForm, GradeForm
 
 
 def dashboard(request):
@@ -42,3 +42,21 @@ def add_student(request):
         form = StudentForm()
     
     return render(request, 'core/add_student.html', {'form': form})
+
+def delete_student(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    if request.method == 'POST':
+        student.delete()
+        return redirect('dashboard')
+    return render(request, 'core/delete_student.html', {'student': student})
+
+def add_grade(request):
+    if request.method == 'POST':
+        form = GradeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = GradeForm()
+    
+    return render(request, 'core/add_grade.html', {'form': form})
