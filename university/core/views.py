@@ -1,7 +1,7 @@
 from .models import Student, Grade, Subject
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import StudentForm, GradeForm
-
+from django.db.models import Avg
 
 def dashboard(request):
     subjects = Subject.objects.all()
@@ -20,9 +20,15 @@ def dashboard(request):
         grades = Grade.objects.filter(student=student)
         subject_grades = {grade.subject.name: grade.grade for grade in grades}
         scores = [subject_grades.get(subject.name, '-') for subject in subjects]
+        
+        # Вычисляем средний балл студента
+        average_grade = Grade.objects.filter(student=student).aggregate(Avg('grade'))['grade__avg']
+        average_grade = round(average_grade, 2) if average_grade else '-'  # Округляем до двух знаков после запятой
+        
         student_statistics.append({
             'student': student,
-            'scores': scores
+            'scores': scores,
+            'average_grade': average_grade  # Добавляем средний балл в словарь для передачи в шаблон
         })
 
     return render(request, 'core/dashboard.html', {
@@ -30,7 +36,6 @@ def dashboard(request):
         'subjects': [subject.name for subject in subjects], 
         'selected_subject': selected_subject
     })
-
 
 def add_student(request):
     if request.method == 'POST':
